@@ -48,8 +48,8 @@ def compute_similarity(ideal_distances_df: pd.DataFrame, anti_ideal_distances_df
         for criterion in criteria.keys():
             ideal += ideal_distances_df.loc[i][criterion]
             anti_ideal += anti_ideal_distances_df.loc[i][criterion]
-        similarty = round(anti_ideal / (ideal + anti_ideal), 4)
-        similarity_df.loc[i] = [names[i], similarty]
+        similarity = round(anti_ideal / (ideal + anti_ideal), 4)
+        similarity_df.loc[i] = [names[i], similarity]
         
     # Order the dataframe by similarity
     similarity_df.sort_values(by="similarity", ascending=True, inplace=True)
