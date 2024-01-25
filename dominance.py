@@ -31,9 +31,9 @@ def retrieve_pareto_front(df: pd.DataFrame, critera: dict) -> pd.DataFrame:
 if __name__ == "__main__":
     initial_solutions: pd.DataFrame = pd.read_csv("initial_solutions.csv")
     # {criterion: [Direction, Indifference, Veto]}
-    critera:dict = {"C4": ["minimize", 30, 0], "C6": ["maximize", 1, 0]}
+    criteria:dict = {"C4": ["minimize", 30, 0], "C6": ["maximize", 1, 0]}
     
-    preanalysed_solutions: pd.DataFrame = retrieve_pareto_front(initial_solutions, critera)
+    preanalysed_solutions: pd.DataFrame = retrieve_pareto_front(initial_solutions, criteria)
     
     preanalysed_solutions.to_csv("preanalysed_solutions.csv", index=False)
     
