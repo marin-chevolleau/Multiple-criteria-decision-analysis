@@ -179,6 +179,18 @@ def exploit_dominance(high_dominance_matrix: pd.DataFrame, low_dominance_matrix:
     return ranked_solutions
 
 
+def ranked_solutions_name(ranked_solutions: list, df: pd.DataFrame, name_column: int) -> list:
+    """
+    Return the ranked solutions with their names
+    """
+    ranked_solutions_names: list = []
+    
+    for solution in ranked_solutions:
+        ranked_solutions_names.append(list(df.loc[solution, df.columns[name_column]]))
+        
+    return ranked_solutions_names
+
+
 if __name__ == "__main__":
     initial_solutions: pd.DataFrame = pd.read_csv("preanalysed_solutions.csv")
     # {criterion: [Direction, Indifference, Veto, Weight]}
@@ -192,5 +204,6 @@ if __name__ == "__main__":
     low_dominance: pd.DataFrame = low_dominance_matrix(initial_solutions, criteria, tresholds)
     
     ranked_solutions: list = exploit_dominance(high_dominance, low_dominance)
-    
-    print(ranked_solutions)
+    ranked_solutions_names: list = ranked_solutions_name(ranked_solutions, initial_solutions, 0)
+
+    print(ranked_solutions_names)
