@@ -16,6 +16,7 @@ The aim of this project is to propose a turnkey implementation of the main multi
 
 ├─ 🐍 dominance.py → find the dominant pareto solutions \
 ├─ 🐍 electre_1.py → plot ranking graph using [Electre 1](https://en.wikipedia.org/wiki/%C3%89LECTRE) method  \
+├─ 🐍 electre_2.py → rank solutions using [Electre 2](https://en.wikipedia.org/wiki/%C3%89LECTRE) method  \
 ├─ 📒 initial_solutions.csv → dummy dataset of cities to rank \
 ├─ 📜 README.md → This file \
 ├─ 🐍 satisfaction.py → find satisfying solutions according to the decision-maker needs \
@@ -31,4 +32,5 @@ The first step is mandatory, the others are optional.
 1. `python3 dominance.py` **OR** `python3 satisfaction.py`
 2. `python3 weighting.py`
 3. `python3 electre_1.py`
-4. `python3 topsis.py`
+4. `python3 electre_2.py`
+5. `python3 topsis.py`
