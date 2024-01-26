@@ -92,7 +92,7 @@ def treshold_matrix(concordance_matrix: pd.DataFrame, discordance_matrix: pd.Dat
         for j in range(len(concordance_matrix)):
             if i == j: treshold_matrix.loc[i, j] = None
             else:
-                if discordance_matrix.loc[i, j] is None: treshold_matrix.loc[i, j] = None
+                if concordance_matrix.loc[i, j] is None: treshold_matrix.loc[i, j] = None
                 elif (concordance_matrix.loc[i, j] >= concordance_treshold and
                       discordance_matrix.loc[i, j] <= discordance_treshold): treshold_matrix.loc[i, j] = True
                 else: treshold_matrix.loc[i, j] = False
