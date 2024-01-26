@@ -70,7 +70,7 @@ def discordance_matrix(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     
     for i in range(len(df)):
         for j in range(len(df)):
-            if i == j: concordance_matrix.loc[i, j] = None
+            if i == j: discordance_matrix.loc[i, j] = None
             else: discordance_matrix.loc[i, j] = discordance(df.loc[i], df.loc[j], criteria)
             
     return discordance_matrix
