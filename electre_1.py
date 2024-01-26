@@ -76,16 +76,17 @@ def discordance_matrix(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     return discordance_matrix
 
 
-def treshold_matrix(concordance_matrix: pd.DataFrame, discordance_matrix: pd.DataFrame, tresholds: tuple, criteria: dict) -> pd.DataFrame:
+def treshold_matrix(concordance_matrix: pd.DataFrame, discordance_matrix: pd.DataFrame, 
+                    concordance_treshold: float, discordance_treshold: float, criteria: dict) -> pd.DataFrame:
     """
     Return the matrix of relations respecting the tresholds
     """
     treshold_matrix: pd.DataFrame = pd.DataFrame(index=concordance_matrix.index, columns=concordance_matrix.columns)
     
     # Multiply concordance treshold by the sum of the weights (to have the same scale as the concordance matrix)
-    concordance_treshold = tresholds[0] * sum([descriptors[3] for descriptors in criteria.values()])
+    concordance_treshold *= sum([descriptors[3] for descriptors in criteria.values()])
     # Multiply the discordance treshold by the maximum discordance in the discordance matrix (to have the same scale as the discordance matrix)
-    discordance_treshold = tresholds[1] * discordance_matrix.max().max()
+    discordance_treshold *= discordance_matrix.max().max()
     
     for i in range(len(concordance_matrix)):
         for j in range(len(concordance_matrix)):
@@ -125,11 +126,12 @@ if __name__ == "__main__":
     criteria: dict = {"C1": ["minimize", 50000, 0, 1], "C2": ["minimize", 0, 0, 2], "C3": ["maximize", 0, 0, 4],
                        "C4": ["minimize", 30, 0, 5], "C5": ["minimize", 0, 0, 3], "C6": ["maximize", 1, 0, 5], 
                        "C7": ["maximize", 0, 2, 4]}
-    # [Concordance treshold, Discordance treshold]
-    tresholds: tuple = (0.95, 0.6)
+
+    concordance_treshold: float = 0.95
+    discordance_treshold: float = 0.6
     
     concordance_matrix: pd.DataFrame = concordance_matrix(initial_solutions, criteria)
     discordance_matrix: pd.DataFrame = discordance_matrix(initial_solutions, criteria)
-    treshold_matrix: pd.DataFrame = treshold_matrix(concordance_matrix, discordance_matrix, tresholds, criteria)
+    treshold_matrix: pd.DataFrame = treshold_matrix(concordance_matrix, discordance_matrix, concordance_treshold, discordance_treshold, criteria)
     
     visualize_matrix(treshold_matrix)
