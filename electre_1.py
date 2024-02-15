@@ -34,16 +34,12 @@ def concordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None,
     concordance: Union[None, float] = 0
     
     for criterion, descriptors in criteria.items():
-        direction: str = descriptors[0]
         indifference: float = descriptors[1]
         veto: float = descriptors[2]
         weight: float = descriptors[3]
         
         if veto != 0 and abs(row1[criterion] - row2[criterion]) > veto: return None
-        if direction == "maximize":
-            if (row1[criterion] + indifference) >= row2[criterion]: concordance += weight
-        elif direction == "minimize":
-            if (row1[criterion] - indifference) <= row2[criterion]: concordance += weight
+        if (row1[criterion] + indifference) >= row2[criterion]: concordance += weight
             
     return concordance
 
@@ -70,17 +66,13 @@ def discordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None,
     observed_discordances: list = []
     
     for criterion, descriptors in criteria.items():
-        direction: str = descriptors[0]
         indifference: float = descriptors[1]
         veto: float = descriptors[2]
         
         if veto != 0 and abs(row1[criterion] - row2[criterion]) > veto: return None
-        if direction == "maximize":
-            if (row1[criterion] + indifference) < row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
-            else: observed_discordances.append(0)
-        elif direction == "minimize":
-            if (row1[criterion] - indifference) > row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
-            else: observed_discordances.append(0)
+
+        if (row1[criterion] + indifference) < row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
+        else: observed_discordances.append(0)
             
     return max(observed_discordances)
 
