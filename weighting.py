@@ -9,12 +9,12 @@ def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     # Reorder minimizing criteria
     for criterion, descriptors in criteria.items():
         if descriptors[0] == "minimize":
-            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: max(normalized_df[criterion]) - x)
+            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: max(df[criterion]) - x)
             
     # Normalize criteria values between 0 and 1
     for criterion in criteria.keys():
         normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
-            (x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
+            (x - min(df[criterion])) / (max(df[criterion]) - min(df[criterion])))
     
     return normalized_df
     
