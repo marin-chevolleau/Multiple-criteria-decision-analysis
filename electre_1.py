@@ -4,6 +4,29 @@ from typing import Union
 import networkx as nx
 import matplotlib.pyplot as plt
 
+def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
+    """
+    Return a normalized version of a dataframe
+    """
+    normalized_df: pd.DataFrame = df.copy()
+    
+    # Reorder minimizing criteria
+    for criterion, descriptors in criteria.items():
+        if descriptors[0] == "minimize":
+            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: (max(df[criterion]) - x))
+    
+    # Normalize veto and indifference thresholds
+    for criterion, descriptors in criteria.items():
+        if descriptors[1] != 0: descriptors[1] = (descriptors[1] / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
+        if descriptors[2] != 0: descriptors[2] = (descriptors[2] / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
+    
+    # Normalize criteria and multiply them by their weight
+    for criterion in criteria.keys():
+        normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
+            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))))
+    
+    return normalized_df
+
 def concordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None, float]:
     """
     Return the concordance of the two rows
@@ -126,12 +149,15 @@ if __name__ == "__main__":
     criteria: dict = {"C1": ["minimize", 50000, 0, 1], "C2": ["minimize", 0, 0, 2], "C3": ["maximize", 0, 0, 4],
                        "C4": ["minimize", 30, 0, 5], "C5": ["minimize", 0, 0, 3], "C6": ["maximize", 1, 0, 5], 
                        "C7": ["maximize", 0, 2, 4]}
-
+    
+    # Retrieve the normalized solutions and new indifference and veto thresholds
+    normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
+    
     concordance_treshold: float = 0.95
     discordance_treshold: float = 0.6
     
-    concordance_matrix: pd.DataFrame = concordance_matrix(initial_solutions, criteria)
-    discordance_matrix: pd.DataFrame = discordance_matrix(initial_solutions, criteria)
+    concordance_matrix: pd.DataFrame = concordance_matrix(normalized_solutions, criteria)
+    discordance_matrix: pd.DataFrame = discordance_matrix(normalized_solutions, criteria)
     treshold_matrix: pd.DataFrame = treshold_matrix(concordance_matrix, discordance_matrix, concordance_treshold, discordance_treshold, criteria)
     
     visualize_matrix(treshold_matrix)
