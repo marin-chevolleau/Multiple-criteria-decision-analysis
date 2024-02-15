@@ -21,7 +21,7 @@ The aim of this project is to propose a turnkey implementation of the main multi
 ├─ 📜 README.md → This file \
 ├─ 🐍 satisfaction.py → find satisfying solutions according to the decision-maker needs \
 ├─ 🐍 topsis.py → rank solutions using [TOPSIS](https://en.wikipedia.org/wiki/TOPSIS) method  \
-└─ 🐍 weighting.py → rank solutions using [weighted sum](https://en.wikipedia.org/wiki/Weighted_sum_model) method \
+└─ 🐍 weighting.py → rank solutions using [weighted sum](https://en.wikipedia.org/wiki/Weighted_sum_model) method
 
 ## Start
 
