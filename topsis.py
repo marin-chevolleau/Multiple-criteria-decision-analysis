@@ -14,7 +14,7 @@ def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     # Normalize criteria and multiply them by their weight
     for criterion in criteria.keys():
         normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
-            ((x - min(df[criterion])) / (max(df[criterion]) - min(df[criterion]))) * criteria[criterion][1])
+            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))) * criteria[criterion][1])
     
     return normalized_df
 
