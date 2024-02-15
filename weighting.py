@@ -14,7 +14,7 @@ def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     # Normalize criteria values between 0 and 1
     for criterion in criteria.keys():
         normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
-            (x - min(df[criterion])) / (max(df[criterion]) - min(df[criterion])))
+            (x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
     
     return normalized_df
     
