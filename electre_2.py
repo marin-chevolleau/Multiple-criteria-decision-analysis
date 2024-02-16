@@ -1,6 +1,29 @@
 import pandas as pd
 from typing import Union
 
+def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
+    """
+    Return a normalized version of a dataframe
+    """
+    normalized_df: pd.DataFrame = df.copy()
+    
+    # Reorder minimizing criteria
+    for criterion, descriptors in criteria.items():
+        if descriptors[0] == "minimize":
+            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: (max(df[criterion]) - x))
+    
+    # Normalize veto and indifference thresholds
+    for criterion, descriptors in criteria.items():
+        if descriptors[1] != 0: descriptors[1] = (descriptors[1] / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
+        if descriptors[2] != 0: descriptors[2] = (descriptors[2] / (max(normalized_df[criterion]) - min(normalized_df[criterion])))
+    
+    # Normalize criteria and multiply them by their weight
+    for criterion in criteria.keys():
+        normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
+            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))))
+
+    return normalized_df
+
 
 def concordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None, float]:
     """
@@ -9,16 +32,12 @@ def concordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None,
     concordance: Union[None, float] = 0
     
     for criterion, descriptors in criteria.items():
-        direction: str = descriptors[0]
         indifference: float = descriptors[1]
         veto: float = descriptors[2]
         weight: float = descriptors[3]
         
         if veto != 0 and abs(row1[criterion] - row2[criterion]) > veto: return None
-        if direction == "maximize":
-            if (row1[criterion] + indifference) >= row2[criterion]: concordance += weight
-        elif direction == "minimize":
-            if (row1[criterion] - indifference) <= row2[criterion]: concordance += weight
+        if (row1[criterion] + indifference) >= row2[criterion]: concordance += weight
             
     return concordance
 
@@ -45,17 +64,13 @@ def discordance(row1: pd.Series, row2: pd.Series, criteria: dict) -> Union[None,
     observed_discordances: list = []
     
     for criterion, descriptors in criteria.items():
-        direction: str = descriptors[0]
         indifference: float = descriptors[1]
         veto: float = descriptors[2]
         
         if veto != 0 and abs(row1[criterion] - row2[criterion]) > veto: return None
-        if direction == "maximize":
-            if (row1[criterion] + indifference) < row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
-            else: observed_discordances.append(0)
-        elif direction == "minimize":
-            if (row1[criterion] - indifference) > row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
-            else: observed_discordances.append(0)
+        
+        if (row1[criterion] + indifference) < row2[criterion]: observed_discordances.append(abs(row2[criterion] - (row1[criterion])))
+        else: observed_discordances.append(0)
             
     return max(observed_discordances)
 
@@ -101,6 +116,7 @@ def treshold_matrix(concordance_matrix: pd.DataFrame, discordance_matrix: pd.Dat
     """
     treshold_matrix: pd.DataFrame = pd.DataFrame(index=concordance_matrix.index, columns=concordance_matrix.columns)
     
+    
     # Multiply concordance treshold by the sum of the weights (to have the same scale as the concordance matrix)
     concordance_treshold *= sum([descriptors[3] for descriptors in criteria.values()])
     # Multiply the discordance treshold by the maximum discordance in the discordance matrix (to have the same scale as the discordance matrix)
@@ -126,6 +142,7 @@ def high_dominance_matrix(df: pd.DataFrame, criteria: dict, tresholds: tuple) ->
     
     # Obtain the concordance and discordance matrices
     concordance: pd.DataFrame = obstructive_free_matrix(concordance_matrix(df, criteria))
+    
     discordance: pd.DataFrame = discordance_matrix(df, criteria)
     
     # Obtain the high and medium dominance matrices
@@ -200,10 +217,13 @@ if __name__ == "__main__":
     # [High concordance treshold, Medium concordance treshold, Low concordance treshold, High discordance treshold, Low discordance treshold]
     tresholds: tuple = (0.95, 0.6, 0.3, 0.6, 0.3)
     
-    high_dominance: pd.DataFrame = high_dominance_matrix(initial_solutions, criteria, tresholds)
-    low_dominance: pd.DataFrame = low_dominance_matrix(initial_solutions, criteria, tresholds)
+    normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
+
+    high_dominance: pd.DataFrame = high_dominance_matrix(normalized_solutions, criteria, tresholds)
+    low_dominance: pd.DataFrame = low_dominance_matrix(normalized_solutions, criteria, tresholds)
     
     ranked_solutions: list = exploit_dominance(high_dominance, low_dominance)
+    
     ranked_solutions_names: list = ranked_solutions_name(ranked_solutions, initial_solutions, 0)
 
     print(ranked_solutions_names)
