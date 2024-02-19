@@ -129,7 +129,7 @@ def visualize_matrix(matrix: pd.DataFrame):
             if matrix.iloc[i, j] is True:
                 G.add_edge(i, j)
 
-    pos = nx.spring_layout(G)
+    pos = nx.circular_layout(G)
     nx.draw(G, pos, with_labels=True, arrows=True)
 
     plt.show()
