@@ -6,15 +6,14 @@ def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
     """
     normalized_df: pd.DataFrame = df.copy()
     
-    # Reorder minimizing criteria
     for criterion, descriptors in criteria.items():
+        # Reorder minimizing criteria
         if descriptors[0] == "minimize":
-            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: (max(normalized_df[criterion]) - x) * descriptors[1])
-            
-    # Normalize criteria and multiply them by their weight
-    for criterion in criteria.keys():
+            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: (max(normalized_df[criterion]) - x))
+        
+        # Normalize criteria and multiply them by their weight
         normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
-            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))) * criteria[criterion][1])
+            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))) * descriptors[1])    
     
     return normalized_df
 
