@@ -2,28 +2,7 @@ import pandas as pd
 
 from criterion import Criterion
 
-def normalize(df: pd.DataFrame, weights: dict[str, Criterion]) -> pd.DataFrame:
-    """
-    Return a normalized version of a dataframe
-    """
-    normalized_df: pd.DataFrame = df.copy()
-
-    # Reorder minimizing weight
-    for criterion, descriptors in weights.items():
-        if descriptors.direction == "minimize":
-            normalized_df[criterion] = normalized_df[criterion].apply(
-                lambda x: max(df[criterion]) - x
-            )
-
-    # Normalize weight values between 0 and 1
-    for criterion in weights.keys():
-        normalized_df[criterion] = normalized_df[criterion].apply(
-            lambda x: (x - min(normalized_df[criterion]))
-            / (max(normalized_df[criterion]) - min(normalized_df[criterion]) + 1)
-        )
-
-    return normalized_df
-
+from normalize import normalize
 
 def compute_weights(df: pd.DataFrame, weights: dict[str, Criterion]) -> pd.DataFrame:
     """

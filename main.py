@@ -78,17 +78,18 @@ if __name__ == "__main__":
 
     # Electre 1
     normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
+    criteria = normalize_criteria(normalized_solutions, criteria)
 
     concordance_treshold: float = 0.95
     discordance_treshold: float = 0.6
 
-    concordance_matrix: pd.DataFrame = concordance_matrix(
+    concordance_matrix: pd.DataFrame = get_concordance_matrix(
         normalized_solutions, criteria
     )
-    discordance_matrix: pd.DataFrame = discordance_matrix(
+    discordance_matrix: pd.DataFrame = get_discordance_matrix(
         normalized_solutions, criteria
     )
-    treshold_matrix: pd.DataFrame = treshold_matrix(
+    treshold_matrix: pd.DataFrame = get_treshold_matrix(
         concordance_matrix,
         discordance_matrix,
         concordance_treshold,

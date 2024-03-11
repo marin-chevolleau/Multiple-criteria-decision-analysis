@@ -5,43 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from criterion import Criterion
-
-
-def normalize(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.DataFrame:
-    """
-    Return a normalized version of a dataframe
-    """
-    normalized_df: pd.DataFrame = df.copy()
-
-    # Reorder minimizing criteria
-    for criterion, descriptors in criteria.items():
-        if descriptors.direction == "minimize":
-            normalized_df[criterion] = normalized_df[criterion].apply(
-                lambda x: (max(df[criterion]) - x)
-            )
-
-    # Normalize veto and indifference thresholds
-    for criterion, descriptors in criteria.items():
-        if descriptors.indifference != 0:
-            descriptors.indifference = descriptors.indifference / (
-                max(normalized_df[criterion]) - min(normalized_df[criterion])
-            )
-        if descriptors.veto != 0:
-            descriptors.veto = descriptors.veto / (
-                max(normalized_df[criterion]) - min(normalized_df[criterion])
-            )
-
-    # Normalize criteria and multiply them by their weight
-    for criterion in criteria.keys():
-        normalized_df[criterion] = normalized_df[criterion].apply(
-            lambda x: (
-                (x - min(normalized_df[criterion]))
-                / (max(normalized_df[criterion]) - min(normalized_df[criterion]))
-            )
-        )
-
-    return normalized_df
-
+from normalize import *
 
 def concordance(row1: pd.Series, row2: pd.Series, criteria: dict[str, Criterion]) -> Union[None, float]:
     """
@@ -58,7 +22,7 @@ def concordance(row1: pd.Series, row2: pd.Series, criteria: dict[str, Criterion]
     return concordance
 
 
-def concordance_matrix(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.DataFrame:
+def get_concordance_matrix(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.DataFrame:
     """
     Return the concordance matrix of the dataframe
     """
@@ -95,7 +59,7 @@ def discordance(row1: pd.Series, row2: pd.Series, criteria: dict[str, Criterion]
     return max(observed_discordances)
 
 
-def discordance_matrix(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.DataFrame:
+def get_discordance_matrix(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.DataFrame:
     """
     Return the discordance matrix of the dataframe
     """
@@ -113,7 +77,7 @@ def discordance_matrix(df: pd.DataFrame, criteria: dict[str, Criterion]) -> pd.D
     return discordance_matrix
 
 
-def treshold_matrix(
+def get_treshold_matrix(
     concordance_matrix: pd.DataFrame,
     discordance_matrix: pd.DataFrame,
     concordance_treshold: float,
@@ -191,17 +155,18 @@ if __name__ == "__main__":
 
     # Retrieve the normalized solutions and new indifference and veto thresholds
     normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
+    criteria = normalize_criteria(normalized_solutions, criteria)
 
     concordance_treshold: float = 0.95
     discordance_treshold: float = 0.6
 
-    concordance_matrix: pd.DataFrame = concordance_matrix(
+    concordance_matrix: pd.DataFrame = get_concordance_matrix(
         normalized_solutions, criteria
     )
-    discordance_matrix: pd.DataFrame = discordance_matrix(
+    discordance_matrix: pd.DataFrame = get_discordance_matrix(
         normalized_solutions, criteria
     )
-    treshold_matrix: pd.DataFrame = treshold_matrix(
+    treshold_matrix: pd.DataFrame = get_treshold_matrix(
         concordance_matrix,
         discordance_matrix,
         concordance_treshold,
