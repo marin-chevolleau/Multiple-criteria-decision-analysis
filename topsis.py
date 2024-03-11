@@ -1,72 +1,102 @@
 import pandas as pd
 
-def normalize(df: pd.DataFrame, criteria: dict) -> pd.DataFrame:
+from criterion import Criterion
+
+def normalize(df: pd.DataFrame, weights: dict[str, Criterion]) -> pd.DataFrame:
     """
     Return a normalized version of a dataframe
     """
     normalized_df: pd.DataFrame = df.copy()
-    
-    for criterion, descriptors in criteria.items():
+
+    for criterion, descriptors in weights.items():
         # Reorder minimizing criteria
-        if descriptors[0] == "minimize":
-            normalized_df[criterion] = normalized_df[criterion].apply(lambda x: (max(normalized_df[criterion]) - x))
-        
+        if descriptors.direction == "minimize":
+            normalized_df[criterion] = normalized_df[criterion].apply(
+                lambda x: (max(normalized_df[criterion]) - x)
+            )
+
         # Normalize criteria and multiply them by their weight
-        normalized_df[criterion] = normalized_df[criterion].apply(lambda x: 
-            ((x - min(normalized_df[criterion])) / (max(normalized_df[criterion]) - min(normalized_df[criterion]))) * descriptors[1])    
-    
+        normalized_df[criterion] = normalized_df[criterion].apply(
+            lambda x: (
+                (x - min(normalized_df[criterion]))
+                / (max(normalized_df[criterion]) - min(normalized_df[criterion]) + 1)
+            )
+            * descriptors.weight
+        )
+
     return normalized_df
 
 
-def compute_distances(df: pd.DataFrame, criteria: dict):
+def compute_distances(df: pd.DataFrame, weights: dict[str, Criterion]):
     """
     Return a dataframe with the distances to the ideal and anti-ideal solutions appended
     """
     ideal_distances_df: pd.DataFrame = df.copy()
     anti_ideal_distances_df: pd.DataFrame = df.copy()
-    
-    for criterion in criteria.keys():
-        ideal_distances_df[criterion] = ideal_distances_df[criterion].apply(lambda x: (max(ideal_distances_df[criterion]) - x))
-        anti_ideal_distances_df[criterion] = anti_ideal_distances_df[criterion].apply(lambda x: (x - min(anti_ideal_distances_df[criterion])))
-    
+
+    for criterion in weights.keys():
+        ideal_distances_df[criterion] = ideal_distances_df[criterion].apply(
+            lambda x: (max(ideal_distances_df[criterion]) - x)
+        )
+        anti_ideal_distances_df[criterion] = anti_ideal_distances_df[criterion].apply(
+            lambda x: (x - min(anti_ideal_distances_df[criterion]))
+        )
+
     return (ideal_distances_df, anti_ideal_distances_df)
 
 
-def compute_similarity(ideal_distances_df: pd.DataFrame, anti_ideal_distances_df: pd.DataFrame, criteria: dict):
+def compute_similarity(
+    ideal_distances_df: pd.DataFrame,
+    anti_ideal_distances_df: pd.DataFrame,
+    weights: dict[str, Criterion],
+):
     """
     Return a dataframe with the similarity of each solution to the ideal and anti-ideal solutions
     """
     similarity_df: pd.DataFrame = pd.DataFrame(columns=["criterion", "similarity"])
-    
-    # Retrieve the names as the only column of the dataframe not in criteria
-    names: pd.Series = ideal_distances_df[list(set(ideal_distances_df.columns) - set(criteria.keys()))[0]]
-    
+
+    names: pd.Series = ideal_distances_df[list(ideal_distances_df.columns)[0]]
+
     for i in range(len(ideal_distances_df)):
         ideal = 0
         anti_ideal = 0
-        for criterion in criteria.keys():
+        for criterion in weights.keys():
             ideal += ideal_distances_df.loc[i][criterion]
             anti_ideal += anti_ideal_distances_df.loc[i][criterion]
         similarity = round(anti_ideal / (ideal + anti_ideal), 4)
         similarity_df.loc[i] = [names[i], similarity]
-        
+
     # Order the dataframe by similarity
     similarity_df.sort_values(by="similarity", ascending=True, inplace=True)
-        
-    return similarity_df    
+
+    return similarity_df
 
 
 if __name__ == "__main__":
-    initial_solutions: pd.DataFrame = pd.read_csv("preanalysed_solutions.csv")
-    # {criterion: [Direction, Weight]}
-    criteria: dict = {"C1": ["minimize", 1], "C2": ["minimize", 2], "C3": ["maximize", 4],
-                      "C4": ["minimize", 5], "C5": ["minimize", 3], "C6": ["maximize", 5], 
-                      "C7": ["maximize", 4]}
+    input_path = "data/"
+    output_path = "output/"
 
-    normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
-    (ideal_distances, anti_ideal_distances_df) = compute_distances(normalized_solutions, criteria)
-    similarity_df: pd.DataFrame = compute_similarity(ideal_distances, anti_ideal_distances_df, criteria)
+    initial_solutions: pd.DataFrame = pd.read_csv(
+        #output_path + "preanalysed_solutions_satisfaction.csv"
+        output_path + "preanalysed_solutions_dominance.csv"
+    )
     
-    similarity_df.to_csv("topsis_solutions.csv", index=False)
-    
-    
+    weights: dict = {
+        "C1": Criterion("minimize", weight=1),
+        "C2": Criterion("minimize", weight=2),
+        "C3": Criterion("maximize", weight=4),
+        "C4": Criterion("minimize", weight=5),
+        "C5": Criterion("minimize", weight=3),
+        "C6": Criterion("maximize", weight=5),
+        "C7": Criterion("maximize", weight=4),
+    }
+
+    normalized_solutions: pd.DataFrame = normalize(initial_solutions, weights)
+    (ideal_distances, anti_ideal_distances_df) = compute_distances(
+        normalized_solutions, weights
+    )
+    similarity_df: pd.DataFrame = compute_similarity(
+        ideal_distances, anti_ideal_distances_df, weights
+    )
+
+    similarity_df.to_csv(output_path + "topsis_solutions.csv", index=False)

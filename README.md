@@ -5,6 +5,7 @@ The aim of this project is to propose a turnkey implementation of the main multi
 ## Requirements
 
 ### Python dependencies
+
 - pandas
 - typing
 - networkx
