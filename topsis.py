@@ -53,8 +53,8 @@ if __name__ == "__main__":
     output_path = "output/"
 
     initial_solutions: pd.DataFrame = pd.read_csv(
-        #output_path + "preanalysed_solutions_satisfaction.csv"
-        output_path + "preanalysed_solutions_dominance.csv"
+        output_path + "preanalysed_solutions_satisfaction.csv"
+        #output_path + "preanalysed_solutions_dominance.csv"
     )
     
     weights: dict = {

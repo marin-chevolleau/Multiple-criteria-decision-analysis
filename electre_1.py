@@ -154,7 +154,7 @@ if __name__ == "__main__":
     }
 
     # Retrieve the normalized solutions and new indifference and veto thresholds
-    normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria)
+    normalized_solutions: pd.DataFrame = normalize(initial_solutions, criteria, use_weight=True)
     criteria = normalize_criteria(normalized_solutions, criteria)
 
     concordance_treshold: float = 0.95
